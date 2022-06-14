@@ -1,11 +1,16 @@
 import Vapor
+import Apollo
 
 func routes(_ app: Application) throws {
-    app.get { req in
-        return "It works!"
-    }
+    app.get { req async throws -> String in
+        await withCheckedContinuation { continuation in
+            print("Servicing request")
+            let client = ApolloClient(url: URL(string: "https://api.spacex.land/graphql/")!)
 
-    app.get("hello") { req -> String in
-        return "Hello, world!"
+            client.fetch(query: LaunchesQuery()) { response in
+                print("Returning response (never called)")
+                continuation.resume(returning: "Hello World!")
+            }
+        }
     }
 }
